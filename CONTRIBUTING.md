@@ -14,14 +14,16 @@ Please treat everyone in the community with respect, kindness, and constructive 
 
 ### 1. Reporting Bugs & Requesting Features
 - **Search existing issues** first to avoid duplicates.
-- **For bugs:** Open an issue describing the bug, including steps to reproduce, expected vs. actual behavior, and environment details (Node.js 20+ LTS, browser, and package manager details (OS, Node version)).
-- **For feature requests:** Describe the problem you are trying to solve and propose a solution or interface specification.
+- **For bugs:** Open an issue describing the bug, including steps to reproduce, expected vs. actual behavior, and environment details (OS, Rust toolchain version, Node.js version, and Docker engine version).
+- **For feature requests:** Describe the problem you are trying to solve and propose a UI feature, tray action, or container diagnostic tool.
 
 ### 2. Pull Request Workflow
 
-1. **Fork the repository** and clone your fork locally:
+1. **Fork the repository** and clone locally:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/docktray.git
+   git clone https://github.com/alexandrmotologa/docktray.git
+   # Or clone your personal fork if preparing a pull request:
+   # git clone https://github.com/YOUR_USERNAME/docktray.git
    cd docktray
    ```
 
@@ -32,15 +34,15 @@ Please treat everyone in the community with respect, kindness, and constructive 
    ```
 
 3. **Follow commit conventions:** We follow [Conventional Commits](https://www.conventionalcommits.org/):
-   - `feat: add live filter controls to table view`
-   - `fix: handle edge case in session state hydration`
-   - `docs: document local preview instructions in README`
-   - `perf: memoize virtualized list item rendering`
+   - `feat: add PID termination shortcut to process table`
+   - `fix: prevent zombie process leaks in port polling daemon`
+   - `docs: update Windows system tray autostart guide in README`
+   - `perf: optimize native socket enumeration via Win32 netstat API`
 
 4. **Ensure code quality:**
    - Keep code clean, readable, and strictly typed.
-   - Verify that all existing and new unit tests pass before submitting.
-   - Run the local linter/formatter if available.
+   - Run type checks and frontend unit tests: `npm run typecheck && npm test`.
+   - Ensure Rust native components in `src-tauri` compile without warnings.
 
 5. **Push and open a Pull Request:**
    - Push your branch to your fork:
@@ -54,24 +56,39 @@ Please treat everyone in the community with respect, kindness, and constructive 
 
 ## Development Setup
 
-DockTray requires **Node.js 20+ LTS** and npm.
+DockTray is built with **Tauri v2 (Rust)** on the backend and **React 19, TypeScript, Vite, and Tailwind CSS** on the frontend.
 
-1. **Clone the repository and install dependencies:**
+### Prerequisites
+- **Node.js 20+ LTS** and `npm`
+- **Rust toolchain (stable / 1.77+)** via [rustup.rs](https://rustup.rs/)
+- *(Optional)* **Docker Desktop / Docker Engine** for testing container management features
+
+### Steps
+1. **Clone the repository and install frontend dependencies:**
    ```bash
    git clone https://github.com/alexandrmotologa/docktray.git
    cd docktray
    npm install
    ```
 
-2. **Start the local development server:**
+2. **Start the web UI in standalone preview mode:**
    ```bash
    npm run dev
    ```
 
-3. **Run tests and production build:**
+3. **Launch the desktop application with Tauri live reload:**
+   ```bash
+   npm run tauri dev
+   ```
+
+4. **Run unit tests:**
    ```bash
    npm test
-   npm run build
+   ```
+
+5. **Build the production desktop installer:**
+   ```bash
+   npm run tauri build
    ```
 
 Refer to the **Quick Start** section in [README.md](README.md) for full configuration flags, architecture details, and usage examples.
