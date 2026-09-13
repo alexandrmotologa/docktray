@@ -1,0 +1,30 @@
+# Node dependencies & build outputs
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Rust & Tauri build outputs
+src-tauri/target/
+src-tauri/Cargo.lock
+
+# Logs and diagnostics
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS specific files
+.DS_Store
+Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# IDE configs
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
