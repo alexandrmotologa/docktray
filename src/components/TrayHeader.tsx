@@ -1,6 +1,6 @@
 import React from "react";
 import { ActiveTab } from "../types";
-import { RefreshCw, Radio, Layers, Box, FileText, Info } from "lucide-react";
+import { RefreshCw, Radio, Layers, Box, FileText, Info, Settings } from "lucide-react";
 
 interface TrayHeaderProps {
   activeTab: ActiveTab;
@@ -11,6 +11,7 @@ interface TrayHeaderProps {
   onRefresh: () => void;
   isMock: boolean;
   onOpenAbout: () => void;
+  onOpenSettings: () => void;
 }
 
 export const TrayHeader: React.FC<TrayHeaderProps> = ({
@@ -22,6 +23,7 @@ export const TrayHeader: React.FC<TrayHeaderProps> = ({
   onRefresh,
   isMock,
   onOpenAbout,
+  onOpenSettings,
 }) => {
   return (
     <header className="p-3 border-b border-white/10 bg-obsidian-900/90 backdrop-blur-md select-none">
@@ -35,7 +37,7 @@ export const TrayHeader: React.FC<TrayHeaderProps> = ({
               <span className="font-bold text-sm text-white tracking-tight">DockTray</span>
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 live-pulse" title="Scanner active" />
               {isMock && (
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-mono">
+                <span className="text-[10px] px-1.5 py-0.2 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-mono">
                   MOCK
                 </span>
               )}
@@ -51,6 +53,13 @@ export const TrayHeader: React.FC<TrayHeaderProps> = ({
             title="Scan ports now"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin text-cyan-400" : ""}`} />
+          </button>
+          <button
+            onClick={onOpenSettings}
+            className="p-1.5 rounded-md hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
+            title="Settings & Preferences"
+          >
+            <Settings className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={onOpenAbout}

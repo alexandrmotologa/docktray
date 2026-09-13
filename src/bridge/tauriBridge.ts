@@ -1,6 +1,14 @@
-import { DockerContainer, EnvProfile, PortInfo, SystemBridge, SystemStats } from "../types";
+import {
+  DockerContainer,
+  EnvDiffResult,
+  EnvProfile,
+  HttpHealth,
+  PortInfo,
+  SystemBridge,
+  SystemStats,
+  TunnelInfo,
+} from "../types";
 
-// Tauri invoke dynamically loaded or imported
 type InvokeFn = <T>(cmd: string, args?: Record<string, unknown>) => Promise<T>;
 
 let invokePromise: Promise<InvokeFn> | null = null;
@@ -23,6 +31,16 @@ export class TauriBridge implements SystemBridge {
     return invoke<boolean>("kill_process", { pid });
   }
 
+  async killProcessTree(pid: number): Promise<boolean> {
+    const invoke = await getInvoke();
+    return invoke<boolean>("kill_process_tree", { pid });
+  }
+
+  async checkPortHealth(port: number): Promise<HttpHealth | null> {
+    const invoke = await getInvoke();
+    return invoke<HttpHealth | null>("check_port_health", { port });
+  }
+
   async getContainers(): Promise<DockerContainer[]> {
     const invoke = await getInvoke();
     return invoke<DockerContainer[]>("get_docker_containers");
@@ -38,6 +56,16 @@ export class TauriBridge implements SystemBridge {
     return invoke<boolean>("stop_docker_container", { id });
   }
 
+  async getContainerLogs(id: string, tail: number = 80): Promise<string> {
+    const invoke = await getInvoke();
+    return invoke<string>("get_container_logs", { id, tail });
+  }
+
+  async pruneStoppedContainers(): Promise<number> {
+    const invoke = await getInvoke();
+    return invoke<number>("prune_stopped_containers");
+  }
+
   async getEnvProfiles(projectPath?: string): Promise<EnvProfile[]> {
     const invoke = await getInvoke();
     return invoke<EnvProfile[]>("get_env_profiles", { projectPath });
@@ -46,6 +74,16 @@ export class TauriBridge implements SystemBridge {
   async switchEnvProfile(profileId: string, projectPath?: string): Promise<boolean> {
     const invoke = await getInvoke();
     return invoke<boolean>("switch_env_profile", { profileId, projectPath });
+  }
+
+  async getEnvDiff(projectPath?: string): Promise<EnvDiffResult> {
+    const invoke = await getInvoke();
+    return invoke<EnvDiffResult>("get_env_diff", { projectPath });
+  }
+
+  async createLocalTunnel(port: number): Promise<TunnelInfo> {
+    const invoke = await getInvoke();
+    return invoke<TunnelInfo>("create_local_tunnel", { port });
   }
 
   async getSystemStats(): Promise<SystemStats> {

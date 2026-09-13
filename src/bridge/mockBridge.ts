@@ -1,4 +1,13 @@
-import { DockerContainer, EnvProfile, PortInfo, SystemBridge, SystemStats } from "../types";
+import {
+  DockerContainer,
+  EnvDiffResult,
+  EnvProfile,
+  HttpHealth,
+  PortInfo,
+  SystemBridge,
+  SystemStats,
+  TunnelInfo,
+} from "../types";
 
 const INITIAL_PORTS: PortInfo[] = [
   {
@@ -6,36 +15,63 @@ const INITIAL_PORTS: PortInfo[] = [
     protocol: "TCP",
     ip: "127.0.0.1",
     pid: 14290,
+    parentPid: 14200,
+    parentName: "npm run dev",
+    childPids: [14291, 14292],
     processName: "node",
     commandPath: "node /workspace/frontend/server.js",
     memoryMb: 184.5,
     uptimeSec: 3420,
     category: "web",
     pinned: true,
+    httpHealth: {
+      status: 200,
+      statusText: "OK",
+      latencyMs: 14,
+      checkedAt: "Just now",
+    },
   },
   {
     port: 5173,
     protocol: "TCP",
     ip: "127.0.0.1",
     pid: 18932,
+    parentPid: 18900,
+    parentName: "vite",
+    childPids: [],
     processName: "vite",
     commandPath: "node_modules/.bin/vite",
     memoryMb: 92.4,
     uptimeSec: 420,
     category: "web",
     pinned: false,
+    httpHealth: {
+      status: 200,
+      statusText: "OK",
+      latencyMs: 6,
+      checkedAt: "Just now",
+    },
   },
   {
     port: 8080,
     protocol: "TCP",
     ip: "0.0.0.0",
     pid: 9410,
+    parentPid: 9400,
+    parentName: "mvn spring-boot:run",
+    childPids: [],
     processName: "java",
     commandPath: "java -jar target/api-gateway.jar",
     memoryMb: 412.0,
     uptimeSec: 18400,
     category: "web",
     pinned: true,
+    httpHealth: {
+      status: 200,
+      statusText: "OK",
+      latencyMs: 28,
+      checkedAt: "Just now",
+    },
   },
   {
     port: 5432,
@@ -86,6 +122,8 @@ const INITIAL_CONTAINERS: DockerContainer[] = [
     memoryUsageMb: 68.2,
     cpuPercent: 0.4,
     uptime: "24h 12m",
+    composeProject: "core-infrastructure",
+    composeService: "postgres",
   },
   {
     id: "e9f2a3c5d6b7",
@@ -97,6 +135,8 @@ const INITIAL_CONTAINERS: DockerContainer[] = [
     memoryUsageMb: 18.6,
     cpuPercent: 0.1,
     uptime: "24h 10m",
+    composeProject: "core-infrastructure",
+    composeService: "redis",
   },
   {
     id: "f1c8e4d2a9b3",
@@ -111,6 +151,8 @@ const INITIAL_CONTAINERS: DockerContainer[] = [
     memoryUsageMb: 0,
     cpuPercent: 0,
     uptime: "Stopped",
+    composeProject: "messaging-stack",
+    composeService: "rabbitmq",
   },
   {
     id: "a3b9c8d7e6f5",
@@ -122,6 +164,8 @@ const INITIAL_CONTAINERS: DockerContainer[] = [
     memoryUsageMb: 32.1,
     cpuPercent: 0.2,
     uptime: "4h 05m",
+    composeProject: "billing-service",
+    composeService: "stripe-mock",
   },
 ];
 
@@ -131,23 +175,49 @@ const INITIAL_ENV_PROFILES: EnvProfile[] = [
     name: "Local Development",
     fileName: ".env.local",
     isActive: true,
-    variablesCount: 24,
+    variablesCount: 6,
   },
   {
     id: "staging",
     name: "Remote Staging",
     fileName: ".env.staging",
     isActive: false,
-    variablesCount: 26,
+    variablesCount: 5,
   },
   {
     id: "production",
     name: "Production (Read-Only)",
     fileName: ".env.production",
     isActive: false,
-    variablesCount: 28,
+    variablesCount: 6,
   },
 ];
+
+const MOCK_LOGS: Record<string, string[]> = {
+  "d7a4e1b8c9f0": [
+    "2026-09-13 21:00:01 UTC [1] LOG:  starting PostgreSQL 16.2 on x86_64-pc-linux-musl",
+    "2026-09-13 21:00:01 UTC [1] LOG:  listening on IPv4 address '0.0.0.0', port 5432",
+    "2026-09-13 21:00:01 UTC [1] LOG:  listening on IPv6 address '::', port 5432",
+    "2026-09-13 21:00:02 UTC [1] LOG:  database system was shut down at 2026-09-13 20:59:58 UTC",
+    "2026-09-13 21:00:02 UTC [1] LOG:  database system is ready to accept connections",
+    "2026-09-13 21:05:14 UTC [28] LOG: checkpoint starting: time",
+    "2026-09-13 21:05:16 UTC [28] LOG: checkpoint complete: wrote 42 buffers (0.3%); 0 WAL file(s) added",
+  ],
+  "e9f2a3c5d6b7": [
+    "1:M 13 Sep 2026 21:00:03.112 * Running mode=standalone, port=6379.",
+    "1:M 13 Sep 2026 21:00:03.114 # Server initialized",
+    "1:M 13 Sep 2026 21:00:03.115 * Ready to accept connections tcp",
+    "1:M 13 Sep 2026 21:12:00.542 * 100 changes in 300 seconds. Saving...",
+    "1:M 13 Sep 2026 21:12:00.549 * Background saving terminated with success",
+  ],
+  "a3b9c8d7e6f5": [
+    "Starting stripe-mock server v0.170.0 on port 12111...",
+    "Loaded 1,420 OpenAPI operations across 42 tags",
+    "Mock router listening on http://0.0.0.0:12111",
+    "POST /v1/customers -> 200 OK (latency 12ms)",
+    "POST /v1/payment_intents -> 200 OK (latency 18ms)",
+  ],
+};
 
 export class MockBridge implements SystemBridge {
   private ports: PortInfo[] = JSON.parse(JSON.stringify(INITIAL_PORTS));
@@ -155,16 +225,40 @@ export class MockBridge implements SystemBridge {
   private envProfiles: EnvProfile[] = JSON.parse(JSON.stringify(INITIAL_ENV_PROFILES));
 
   async getListeningPorts(): Promise<PortInfo[]> {
-    // Artificial small latency to simulate asynchronous IPC
     await new Promise((resolve) => setTimeout(resolve, 80));
     return [...this.ports];
   }
 
   async killProcess(pid: number): Promise<boolean> {
-    await new Promise((resolve) => setTimeout(resolve, 120));
+    await new Promise((resolve) => setTimeout(resolve, 100));
     const initialCount = this.ports.length;
     this.ports = this.ports.filter((p) => p.pid !== pid);
     return this.ports.length < initialCount;
+  }
+
+  async killProcessTree(pid: number): Promise<boolean> {
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    const initialCount = this.ports.length;
+
+    // Find all ports with this PID or where parentPid is this PID
+    this.ports = this.ports.filter((p) => p.pid !== pid && p.parentPid !== pid);
+    return this.ports.length < initialCount;
+  }
+
+  async checkPortHealth(port: number): Promise<HttpHealth | null> {
+    await new Promise((resolve) => setTimeout(resolve, 120));
+    const target = this.ports.find((p) => p.port === port);
+    if (!target) return null;
+
+    if (target.category === "web") {
+      return {
+        status: 200,
+        statusText: "OK",
+        latencyMs: Math.round(8 + Math.random() * 20),
+        checkedAt: "Just now",
+      };
+    }
+    return null;
   }
 
   async getContainers(): Promise<DockerContainer[]> {
@@ -208,6 +302,23 @@ export class MockBridge implements SystemBridge {
     return true;
   }
 
+  async getContainerLogs(id: string): Promise<string> {
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    const lines = MOCK_LOGS[id] || [
+      `2026-09-13 21:15:00 Container ${id} started successfully`,
+      "Listening for incoming traffic on container socket...",
+      "Status: healthy. 0 errors, 0 warnings.",
+    ];
+    return lines.join("\n");
+  }
+
+  async pruneStoppedContainers(): Promise<number> {
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    const beforeCount = this.containers.length;
+    this.containers = this.containers.filter((c) => c.status === "running");
+    return beforeCount - this.containers.length;
+  }
+
   async getEnvProfiles(): Promise<EnvProfile[]> {
     return [...this.envProfiles];
   }
@@ -219,6 +330,82 @@ export class MockBridge implements SystemBridge {
       isActive: profile.id === profileId,
     }));
     return true;
+  }
+
+  async getEnvDiff(): Promise<EnvDiffResult> {
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    return {
+      profiles: [
+        { id: "local", name: "Local Dev", fileName: ".env.local" },
+        { id: "staging", name: "Remote Staging", fileName: ".env.staging" },
+        { id: "production", name: "Production", fileName: ".env.production" },
+      ],
+      entries: [
+        {
+          key: "DATABASE_URL",
+          values: {
+            local: "postgres://postgres:postgres@localhost:5432/app_dev",
+            staging: "postgres://db_user:secure@staging-db.internal:5432/app_staging",
+            production: "postgres://prod_user:vault-managed@prod-cluster.internal:5432/app_prod",
+          },
+          isSecret: true,
+        },
+        {
+          key: "REDIS_HOST",
+          values: {
+            local: "localhost:6379",
+            staging: "redis-staging.internal:6379",
+            production: "redis-cluster.internal:6379",
+          },
+          isSecret: false,
+        },
+        {
+          key: "JWT_SECRET_KEY",
+          values: {
+            local: "dev_insecure_jwt_secret_12345",
+            staging: "stg_9f83ac8728b7e610d9f4e",
+            production: "prd_a82bc9910d54ef021897c",
+          },
+          isSecret: true,
+        },
+        {
+          key: "NEXT_PUBLIC_API_URL",
+          values: {
+            local: "http://localhost:8080/api/v1",
+            staging: "https://api-staging.docktray.dev/v1",
+            production: "https://api.docktray.dev/v1",
+          },
+          isSecret: false,
+        },
+        {
+          key: "STRIPE_SECRET_KEY",
+          values: {
+            local: "sk_test_mock_12345",
+            staging: null, // Notice: missing in staging to show warning
+            production: "sk_live_vault_provisioned_key",
+          },
+          isSecret: true,
+        },
+        {
+          key: "LOG_LEVEL",
+          values: {
+            local: "debug",
+            staging: "info",
+            production: "warn",
+          },
+          isSecret: false,
+        },
+      ],
+    };
+  }
+
+  async createLocalTunnel(port: number): Promise<TunnelInfo> {
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    return {
+      port,
+      publicUrl: `https://docktray-preview-${port}.loca.lt`,
+      expiresAt: "In 2 hours",
+    };
   }
 
   async getSystemStats(): Promise<SystemStats> {

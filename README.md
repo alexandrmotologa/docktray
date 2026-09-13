@@ -7,14 +7,20 @@ Developers frequently run into issues where a local port like `3000` or `8080` r
 ## Key capabilities
 
 - Scan active IPv4 and IPv6 listening sockets in real time.
-- Inspect process names, PIDs, memory usage, and open ports.
-- Terminate unresponsive processes with one click.
+- Inspect process names, PIDs, memory usage, open ports, and parent process trees.
+- Terminate unresponsive processes with one click, including recursive full process tree termination (`Kill Tree`).
+- Port conflict sentinel: prominent alert when a pinned priority port is occupied, with one-click `Free Port`.
+- HTTP health probing: displays response code (`200 OK`) and latency (`14ms`) on active web ports.
 - Launch `http://localhost:<port>` directly in your browser.
-- Track local Docker containers, their memory footprint, and mapped ports.
-- Restart or stop containers from the tray.
+- Share localhost ports via temporary public tunnels for remote or mobile testing.
+- Track local Docker containers with Docker Compose project grouping, memory footprint, and mapped ports.
+- Inspect live Docker container logs directly from the tray popover.
+- Prune stopped containers with one click.
 - Switch between environment profiles (`.env.local`, `.env.staging`, `.env.production`).
+- Environment profile diff viewer: compare keys side-by-side and highlight missing variables across environments.
+- Full keyboard navigation: use arrow keys, `Enter`, and shortcut keys.
 - Export listening port lists to clipboard as JSON or Markdown.
-- Run in standard web browsers using a mock simulation layer for fast UI development without native dependencies.
+- Run in standard web browsers using an interactive mock simulation layer for fast UI development without native dependencies.
 
 ## Architecture
 
@@ -47,7 +53,7 @@ npm install
 npm run dev:web
 ```
 
-Open `http://localhost:5173` to interact with the simulated ports, process terminations, and Docker containers.
+Open `http://localhost:5173` to interact with the simulated ports, process terminations, Docker logs, and environment diffs.
 
 ### Native desktop application
 
@@ -64,6 +70,8 @@ npm run tauri build
 ## Keyboard shortcuts
 
 - `Ctrl + K` or `Cmd + K`: Focus the search and filter input.
+- `Arrow Up` / `Arrow Down`: Navigate through listening ports.
+- `Enter`: Open `http://localhost:<port>` for the selected port.
 - `Escape`: Clear search filter or close active modal.
 - `Ctrl + Shift + P` (or `Cmd + Shift + P` on macOS): Summon DockTray tray popover globally.
 

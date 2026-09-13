@@ -1,20 +1,37 @@
 import React from "react";
 import { EnvProfile } from "../types";
-import { Check, FileCode2, ShieldAlert } from "lucide-react";
+import { Check, FileCode2, ShieldAlert, GitCompare } from "lucide-react";
 
 interface EnvSwitcherProps {
   profiles: EnvProfile[];
   onSwitch: (profileId: string, name: string) => Promise<boolean>;
+  onOpenDiff: () => void;
 }
 
-export const EnvSwitcher: React.FC<EnvSwitcherProps> = ({ profiles, onSwitch }) => {
+export const EnvSwitcher: React.FC<EnvSwitcherProps> = ({
+  profiles,
+  onSwitch,
+  onOpenDiff,
+}) => {
   return (
     <div className="p-3 space-y-3">
-      <div className="flex items-center space-x-2 text-xs text-slate-400 bg-obsidian-950/60 p-2.5 rounded-lg border border-white/5">
-        <FileCode2 className="w-4 h-4 text-cyan-400 shrink-0" />
-        <p className="text-[11px] leading-relaxed">
-          Switch the active <code className="text-white font-mono">.env</code> file in your current working project directory.
-        </p>
+      {/* Top Banner with Diff Trigger */}
+      <div className="flex items-center justify-between p-2.5 rounded-lg bg-obsidian-950/60 border border-white/5">
+        <div className="flex items-center space-x-2 text-xs text-slate-400 min-w-0 pr-2">
+          <FileCode2 className="w-4 h-4 text-cyan-400 shrink-0" />
+          <p className="text-[11px] leading-relaxed truncate">
+            Active environment profile
+          </p>
+        </div>
+
+        <button
+          onClick={onOpenDiff}
+          className="flex items-center space-x-1 px-2.5 py-1 rounded text-[11px] font-medium bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/20 border border-cyan-500/20 transition-colors shrink-0"
+          title="Compare variables across .env files"
+        >
+          <GitCompare className="w-3 h-3" />
+          <span>Compare Diff</span>
+        </button>
       </div>
 
       <div className="space-y-2">
@@ -31,7 +48,11 @@ export const EnvSwitcher: React.FC<EnvSwitcherProps> = ({ profiles, onSwitch }) 
             >
               <div>
                 <div className="flex items-center space-x-2">
-                  <span className={`text-xs font-semibold ${item.isActive ? "text-cyan-300" : "text-slate-200"}`}>
+                  <span
+                    className={`text-xs font-semibold ${
+                      item.isActive ? "text-cyan-300" : "text-slate-200"
+                    }`}
+                  >
                     {item.name}
                   </span>
                   {item.isActive && (
