@@ -6,7 +6,6 @@ dist-ssr/
 
 # Rust & Tauri build outputs
 src-tauri/target/
-src-tauri/Cargo.lock
 
 # Logs and diagnostics
 npm-debug.log*
