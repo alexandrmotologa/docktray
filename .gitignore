@@ -27,3 +27,6 @@ Thumbs.db
 .vscode/
 *.sublime-workspace
 *.sublime-project
+
+# Master demo video recordings
+*.mp4
